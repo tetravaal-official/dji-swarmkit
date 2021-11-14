@@ -1,0 +1,138 @@
+from multi_robomaster import multi_robot
+import threading
+import time
+import multiprocessing
+from robomaster import flight
+
+SCALE = 19
+
+robot_sn_list = [   '0TQZJ9PCNT16Z4',
+                    '0TQZJ9PCNT16NG',
+                    '0TQZJ9PCNT16R0',
+                    '0TQZJ9PCNT16BN',
+                    '0TQZJ9PCNT16P2',
+                    '0TQZJ9PCNT16WU',
+                    '0TQZJ9PCNT16NB',
+                    '0TQZJ9PCNT16ND',
+                    '0TQZJ9PCNT16XW']
+
+def base_action_1(robot_group):
+    robot_group.set_led(255, 0, 0)
+    robot_group.set_mled_char("r", "heart")
+    robot_group.takeoff().wait_for_completed()
+    robot_group.backward(100).wait_for_completed()
+    robot_group.right(50).wait_for_completed()
+
+#def base_action_1(robot_group):
+    #for i in range(7):
+        #robot_group.set_led(0, 255, 0)
+        #time.sleep(1)
+        #robot_group.set_led(255, 255, 255)
+        #robot_group.set_led(230, 219, 238)
+
+
+    robot_group.land().wait_for_completed()
+    # Work to be done :
+    # Have drones form horizontal line ( Currently in vertical) , and rotate 180 degrees to face audiance.
+    # Have MLED Display CISS
+    # Have them form a circle
+    # Have drones go up while in circle and rotating, still with CISS on MLED
+    # Have drone LED's turn golden
+    # Have each drone go 2Meters away from position and land.
+    # Do for all of the drones ( 4 )
+   # ___
+# Lines below supjected to change
+    #time.sleep(2)
+    #robot_group.set_led(command_dict={1: [255, 0, 0], 2: [0, 255, 0]}) # Code for "breathing" LED
+    #robot_group.land().wait_for_completed()
+    #robot_group.set_led(255, 0, 0)
+
+
+def base_action_2(robot_group):
+    robot_group.set_mled_sc()
+    robot_group.set_led(255, 0, 0)
+    robot_group.takeoff().wait_for_completed()
+    robot_group.set_led(0, 255, 0)
+    robot_group.up(50).wait_for_completed()
+    robot_group.backward(70).wait_for_completed()
+    robot_group._custom_drone_command({0:'S',
+                                       1:'S',
+                                       2:'I',
+                                       3:'C',}, "EXT mled s r {0}")
+    robot_group._dispatcher.wait_for_completed()
+
+    robot_group.rotate(-90).wait_for_completed()
+    robot_group.rotate(180).wait_for_completed()
+    robot_group.rotate(-90).wait_for_completed()
+    #robot_group.flip_forward().wait_for_completed()
+    robot_group.set_mled_char_scroll(direction='l', color='r', freq=1.5, display_str='Merry Xmas CISS')
+
+
+
+def base_action_3(robot_group):
+
+    robot_group._custom_drone_command({0: "-125 -75 0 30",
+                                       1: "25 25 0 30",
+                                       2: "25 -25 0 30",
+                                       3: "-125 75 0 30"},
+                                      "go {0}")
+    robot_group._dispatcher.wait_for_completed()
+
+#all spiral up
+def base_action_4(robot_group):
+    robot_group._custom_drone_command({0: "50 50 50 0 100 100 50",
+                                       1: "50 50 50 0 100 100 50",
+                                       2: "50 50 50 0 100 100 50",
+                                       3: "50 50 50 0 100 100 50"},
+                                      "curve {0}")
+    robot_group._dispatcher.wait_for_completed()
+
+
+
+
+
+def base_action_5(robot_group):
+
+    robot_group.land().wait_for_completed()
+    robot_group.set_led(0, 0, 255)
+
+
+# Do not edit - no changes required
+if __name__ == '__main__':
+
+    multi_drone = multi_robot.MultiDrone()
+
+    multi_drone.initialize(robot_num=4)
+
+
+
+    #robot_sn_list = list(multi_drone._get_sn(timeout=10).keys())  # read sn dictionary and convert sn to list
+
+    multi_drone.number_id_by_sn([0, robot_sn_list[0]], [1, robot_sn_list[1]], [2, robot_sn_list[2]], [3, robot_sn_list[3]])
+    #multi_drone.number_id_by_sn([0, robot_sn_list[0]], [1, robot_sn_list[1]])
+
+    multi_drone_group1 = multi_drone.build_group([0, 1, 2, 3])
+    multi_drone_group2 = multi_drone.build_group([1])
+    #multi_drone_group3 = multi_drone.build_group([2])
+    #multi_drone_group4 = multi_drone.build_group([3])
+
+    #multi_drone.run([multi_drone_group1, base_action_1],
+                    #[multi_drone_group2, base_action_2],
+                    #[multi_drone_group3, base_action_3],
+                    #[multi_drone_group4, base_action_4])
+
+    multi_drone.run([multi_drone_group1, base_action_2])
+    multi_drone.run([multi_drone_group1, base_action_3])
+    multi_drone.run([multi_drone_group1, base_action_4])
+    multi_drone.run([multi_drone_group1, base_action_5])
+#    for drone_id in multi_drone_group1.robots_id_list:
+#        drone_obj = multi_drone_group1.get_robot(drone_id)
+#        drone_obj.send_command('EXT led 0 255 0')
+#        time.sleep(1)
+#        drone_obj.send_command('takeoff')
+#        time.sleep(1)
+
+    multi_drone.close()
+
+
+
